@@ -114,5 +114,41 @@ class Shellcode < ExeFormat
 		}
 		c
 	end
+
+	# returns an assembly `db` directive for the given byte string
+	# example: define_data("ABCD".b) => 'db 0x41, 0x42, 0x43, 0x44'
+	# returns the empty string for empty input so callers can omit the directive
+	def self.define_data(bytes)
+		return '' if bytes.empty?
+		'db ' + bytes.each_byte.map { |b| '0x%02x' % b }.join(', ')
+	end
+
+	# returns an assembly `db` directive for a NULL-terminated string
+	# printable ASCII runs are emitted as string literals; non-printable bytes
+	# break the run and are emitted as hex tokens; a trailing 0 is always appended
+	# example: define_cstring("ABCD".b)      => 'db "ABCD", 0'
+	# example: define_cstring("AB\x05CD".b)  => 'db "AB", 0x05, "CD", 0'
+	# example: define_cstring("".b)          => 'db 0'
+	def self.define_cstring(str)
+		parts = []
+		buf = String.new
+		flush = lambda {
+			unless buf.empty?
+				parts << '"' + buf.gsub(/[\\"]/) { |c| '\\' + c } + '"'
+				buf.clear
+			end
+		}
+		str.each_byte do |b|
+			if b >= 0x20 && b <= 0x7e
+				buf << b.chr
+			else
+				flush.call
+				parts << ('0x%02x' % b)
+			end
+		end
+		flush.call
+		parts << '0'
+		'db ' + parts.join(', ')
+	end
 end
 end
