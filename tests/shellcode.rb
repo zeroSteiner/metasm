@@ -34,6 +34,10 @@ class TestShellcode < Test::Unit::TestCase
 		assert_equal(Metasm::Shellcode.define_data("".b), '')
 	end
 
+	def test_define_data_nil
+		assert_equal(Metasm::Shellcode.define_cstring(nil), '')
+	end
+
 	def test_define_data_full_range
 		assert_equal(Metasm::Shellcode.define_data("\x00\x01\x9f\xa0\xff".b),
 			'db 0x00, 0x01, 0x9f, 0xa0, 0xff')
@@ -58,6 +62,10 @@ class TestShellcode < Test::Unit::TestCase
 
 	def test_define_cstring_empty
 		assert_equal(Metasm::Shellcode.define_cstring("".b), 'db 0')
+	end
+
+	def test_define_cstring_nil
+		assert_equal(Metasm::Shellcode.define_cstring(nil), 'db, 0')
 	end
 
 	def test_define_cstring_escape_quote

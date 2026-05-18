@@ -119,7 +119,8 @@ class Shellcode < ExeFormat
 	# example: define_data("ABCD".b) => 'db 0x41, 0x42, 0x43, 0x44'
 	# returns the empty string for empty input so callers can omit the directive
 	def self.define_data(bytes)
-		return '' if bytes.empty?
+		return '' if bytes.nil? || bytes.empty?
+
 		'db ' + bytes.each_byte.map { |b| '0x%02x' % b }.join(', ')
 	end
 
@@ -130,6 +131,8 @@ class Shellcode < ExeFormat
 	# example: define_cstring("AB\x05CD".b)  => 'db "AB", 0x05, "CD", 0'
 	# example: define_cstring("".b)          => 'db 0'
 	def self.define_cstring(str)
+		str = '' if str.nil?
+
 		parts = []
 		buf = String.new
 		flush = lambda {
